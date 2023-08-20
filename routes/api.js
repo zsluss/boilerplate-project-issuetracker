@@ -18,9 +18,9 @@ let issueSchema = new mongoose.Schema({
   created_on: { type: Date, default: new Date() },
   updated_on: { type: Date, default: new Date() },
   created_by: { required: true, type: String },
-  assigned_to: String,
+  assigned_to: {type: String, default: ''},
   open: { type: Boolean, default: true },
-  status_text: String
+  status_text: {type: String, default: ''},
 });
 
 const Issue = mongoose.model('Issue', issueSchema);
@@ -32,20 +32,21 @@ module.exports = function (app) {
 
     .get(function (req, res) {
       let project = req.params.project;
+      
       let info = {...req.query}
       info['project'] = project;
+      console.log(project,info)
        const issues =  Issue.find(info, 'assigned_to status_text open _id issue_title issue_text created_by created_on updated_on')
 //          .select({ __v: 0, project: 0 })
-          .then(data => {
-            let test = []
-            data.forEach(data => {
-              test.push({_id: data._id, assigned_to: data.assigned_to, status_text: data.status_text, issue_title: data.issue_title, issue_text: data.issue_text, created_by: data.created_by, created_on: data.created_on, updated_on: data.updated_on, open: data.open})
-            })
-            return res.json(test)
-           // return res.json(data)
+         .then(data => {
+        //    let test = []
+        //    data.forEach(data => {
+        //      test.push({_id: data._id, assigned_to: data.assigned_to, status_text: data.status_text, issue_title: data.issue_title, issue_text: data.issue_text, created_by: data.created_by, created_on: data.created_on, updated_on: data.updated_on, open: data.open})
+        //    })
+        //    return res.json(test)
+            return res.json(data)
           })
-      }
-     )
+      })
 
     .post(function (req, res) {
       let project = req.params.project;
@@ -81,8 +82,7 @@ module.exports = function (app) {
 
     .put(function (req, res) {
       let project = req.params.project;
-      console.log(project)
-      //let info = Object.assign(req.body)
+       //let info = Object.assign(req.body)
       let info = { ...req.body };
        for (const [key, value] of Object.entries(info)) {
         if (value === "" || value === undefined) {
