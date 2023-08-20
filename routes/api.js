@@ -31,13 +31,18 @@ module.exports = function (app) {
 
     .get(function (req, res) {
       let project = req.params.project;
+      const issues = Issue.findById(project)
+        .select({ __v: 0, })
+      res.json(issues)
+
+
 
     })
 
     .post(function (req, res) {
       let project = req.params.project;
       let { issue_title, issue_text, created_by, assigned_to, status_text } = req.body;
-      if (!issue_title || !issue_text || !created_by) {
+      if (!project || !issue_title || !issue_text || !created_by) {
         return res.json({ error: 'missing required fields' })
       }
       const issue = Issue({
@@ -66,19 +71,39 @@ module.exports = function (app) {
 
     .put(function (req, res) {
       let project = req.params.project;
-      console.log(req.body, "put")
       let info = Object.assign(req.body)
-      console.log(info)
+      info.updated_on = new Date()
+      for (const [key, value] of Object.entries(info)) {
+        if (value === "" || value === undefined) {
+          delete info[key]
+        }
+      }
+      if (info._id === undefined) { res.json({ error: 'missing _id' }) }
+      else if (Object.keys(info).length < 3) { res.json({ error: 'no update field(s) sent', '_id': info._id }) }
+      Issue.findByIdAndUpdate(info._id, info).exec()
+        .then(data =>{
+        if(data) return  res.json({ result: 'successfully updated', '_id': info._id })
+         else return res.json({error: 'could not update', '_id': info._id})
+        })
+        .catch(err=> console.log(err))
     })
 
     .delete(function (req, res) {
       let project = req.params.project;
+      if (project = "") {
+        res.json({ error: 'missing _id' })
+      }
+      else {
+        const issues = Issue.findByIdAndRemove({_id: req.body._id})
+        .then(
+        res.json({ result: 'successfully deleted', '_id': req.body._id })
+        )
+      }
     });
 
   app.route('/api/issues/api')
     .post(function (req, res) {
-      console.log(req.query, "hereAPI")
-    })
 
+    })
 
 };
