@@ -35,15 +35,8 @@ module.exports = function (app) {
       
       let info = {...req.query}
       info['project'] = project;
-      console.log(project,info)
        const issues =  Issue.find(info, 'assigned_to status_text open _id issue_title issue_text created_by created_on updated_on')
-//          .select({ __v: 0, project: 0 })
          .then(data => {
-        //    let test = []
-        //    data.forEach(data => {
-        //      test.push({_id: data._id, assigned_to: data.assigned_to, status_text: data.status_text, issue_title: data.issue_title, issue_text: data.issue_text, created_by: data.created_by, created_on: data.created_on, updated_on: data.updated_on, open: data.open})
-        //    })
-        //    return res.json(test)
             return res.json(data)
           })
       })
